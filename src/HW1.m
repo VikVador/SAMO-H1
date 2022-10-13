@@ -25,16 +25,16 @@ clearvars; close all; clc
 %  Parameters
 %  ----------
 % Defines the objective function that will be used for the optimization
-functionID = 1;
+functionID = 2;
 
 % Defines the stopping criteria that will be used during optimization
-SC_index = 1;
+SC_index = 2;
 
 % Defines if the surface plot are shown or not
 s_plot = false;
 
 % Initial point 
-xinit   = [2 2];
+xinit   = [20 20];
 
 % Maximum number of iterations
 MaxIter = 1000;
@@ -46,13 +46,16 @@ Nu = 1e-5;
 Epsilon = 1e-3;          
 
 % Stores all the parameters to be displayed on command window
-parameters = [functionID, xinit(1), xinit(2), MaxIter, Epsilon, Nu, SC_index, 0];
+parameters = [0, xinit(1), xinit(2), MaxIter, Epsilon, Nu, SC_index, 0];
 
 %% --------------
 %  Initialization
 %  --------------
 % Retreiving the method
 method = terminal(1, parameters);
+
+% Updating the method used
+parameters(1) = method;
 
 % Displaying all the optimization parameters
 terminal(2, parameters)
