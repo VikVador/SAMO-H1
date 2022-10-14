@@ -28,19 +28,19 @@ clearvars; close all; clc
 functionID = 2;
 
 % Defines the stopping criteria that will be used during optimization
-SC_index = 2;
+SC_index = 1;
 
 % Defines if the surface plot are shown or not
 s_plot = false;
 
 % Initial point 
-xinit   = [20 20];
+xinit   = [60 30];
 
 % Maximum number of iterations
 MaxIter = 1000;
 
 % Tolerance for the stoping criteria (1 & 2)
-Nu = 1e-5;      
+Nu = 1e-2;      
 
 % Tolerance for the stoping criteria (3)
 Epsilon = 1e-3;          
@@ -156,7 +156,9 @@ disp(" ");
 disp(" ");
 
 % Plotting the optimization path and saving it
-plotOptimizationPath(x, functionID, parameters);
+%plotOptimizationPath(x, functionID, parameters);
+
+plotOptimizationPath3D(x, functionID);
 
 
 
