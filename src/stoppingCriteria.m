@@ -36,6 +36,7 @@ function stop = stoppingCriteria(i, x_k, x_k_1, functionID, eps, nu)
         case 3
             % Step 1 - Computing residual
             res = abs(getObjFVal(x_k_1, functionID) - getObjFVal(x_k, functionID));
+            disp(res);
 
             % Step 2 - Check if residual is small enough
             if res < nu

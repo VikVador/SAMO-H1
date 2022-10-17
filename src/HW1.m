@@ -25,32 +25,38 @@ clearvars; close all; clc
 %  Parameters
 %  ----------
 % Defines the objective function that will be used for the optimization
-functionID = 2;
+functionID = 1;
 
 % Defines the stopping criteria that will be used during optimization
 SC_index = 1;
+
+% Defines how alpha is computed
+ALPHA_index = 3;
+
+% Defines the value taken by alpha if it is a constant (ALPHA_index = 1)
+ALPHA_cst = 0.1;
 
 % Defines if the surface plot are shown or not
 s_plot = false;
 
 % Initial point 
-xinit   = [60 30];
+xinit   = randi([-10 10], 1, 2);
 
 % Maximum number of iterations
-MaxIter = 1000;
+MaxIter = 2000;
 
 % Tolerance for the stoping criteria (1 & 2)
-Nu = 1e-2;      
+Epsilon = 1e-5;         
 
 % Tolerance for the stoping criteria (3)
-Epsilon = 1e-3;          
-
-% Stores all the parameters to be displayed on command window
-parameters = [0, xinit(1), xinit(2), MaxIter, Epsilon, Nu, SC_index, 0];
+Nu = 1e-3;       
 
 %% --------------
 %  Initialization
 %  --------------
+% Stores all the parameters to be displayed on command window
+parameters = [0, xinit(1), xinit(2), MaxIter, Epsilon, Nu, SC_index, 0];
+
 % Retreiving the method
 method = terminal(1, parameters);
 
@@ -76,7 +82,6 @@ terminal(3, parameters);
 if s_plot
     plotObjF(1);
     waitforbuttonpress();
-    
     plotObjF(2);
     waitforbuttonpress();
 end
@@ -97,10 +102,10 @@ switch method
             s   = - grad/norm(grad);
     
             % Step 3 - Computing the step length
-            alpha = 0.1;
+            alpha_val = alpha(ALPHA_index, i, ALPHA_cst, functionID, grad);
     
             % Step 4 - Updating our solution
-            xinit = xinit + alpha * transpose(s);
+            xinit = xinit + alpha_val * transpose(s);
     
             % Step 5 - Storing the value for later vizualization
             x(:, i) = xinit;
@@ -114,30 +119,25 @@ switch method
             end
         end
         
-        x = x(:, 1 : i); % Remove the zero elements due to the initialization step
+        x = x(:, 1 : i); 
         
-    case 2
-        disp('You chose the conjugate gradients method with Fletcher-Reeves update rule.')
-        
-        for i=1:MaxIter
+    case 2        
+        for i = 2 : MaxIter
             %%%% ---------------------------------------------------------------------------
             %%%% ADD YOUR CODE
             %%%%
         end
         
-        x=x(:,1:i); %Remove the zero elements due to the initialization step
+        x = x(:, 1 : i); 
         
-    case 3
-        disp('You chose the BFGS Quasi-Newton method.')
-        
-        for i=1:MaxIter
+    case 3        
+        for i = 2 : MaxIter
             %%%% ---------------------------------------------------------------------------
             %%%% ADD YOUR CODE
             %%%%
         end
         
-        x=x(:,1:i); %Remove the zero elements due to the initialization step
-        
+        x = x(:, 1 : i);      
 end
 
 %% ----------------------------
@@ -155,10 +155,10 @@ disp(" ");
 disp(" ");
 disp(" ");
 
-% Plotting the optimization path and saving it
-%plotOptimizationPath(x, functionID, parameters);
-
-plotOptimizationPath3D(x, functionID);
+% Plotting the optimization path (2D & 3D) and saving it
+plotOptimizationPath(x, functionID, parameters);
+plotOptimizationPath3D(x, functionID, parameters);
+close all;
 
 
 

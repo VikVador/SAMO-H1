@@ -1,10 +1,11 @@
-function method = terminal(i, parameters)
+function method = terminal(index, parameters)
     %--------------
     % Documentation
     %--------------
-    % A simple function to display information over the terminal
+    % A simple function to display information over the 
+    % terminal during the whole optimization process
     %
-    switch i
+    switch index
 
         % Initialization
         case 1
@@ -60,7 +61,7 @@ function method = terminal(i, parameters)
             disp("SC Crit : " + int2str(parameters(7)));
             disp(" ");
 
-         % Plotting the results
+         % Plotting the results (1)
         case 3
             disp("-------------------");
             disp("      Plotting     ");
@@ -69,6 +70,7 @@ function method = terminal(i, parameters)
             disp("Plotting objective functions : ...");
             disp(" ");
 
+        % Plotting the results & optimizing (2)
         case 4
             clc;
             terminal(2, parameters);
@@ -85,6 +87,7 @@ function method = terminal(i, parameters)
             disp(" ");
             disp("Solution                : ...");
         
+            % Showing the results
         case 5
             clc;
             terminal(2, parameters);
@@ -99,7 +102,11 @@ function method = terminal(i, parameters)
             disp("    Optimizing     ");
             disp("-------------------");
             disp(" ");
-            disp("Solution                 : found");
+            if parameters(4) == parameters(8)
+                disp("Solution                 : Maximum number of iterations reached");
+            else
+                disp("Solution                 : Done");
+            end
             disp(" ");
     end
 end

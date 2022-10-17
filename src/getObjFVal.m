@@ -2,8 +2,8 @@ function fval = getObjFVal(X, functionID)
     %--------------
     % Documentation
     %--------------
-    % This function returns the value of f_i, evaluated
-    % at the point X = (x, y)
+    % This function returns the value of f_i, 
+    % evaluated at the point X = (x, y)
     %
     % Retreiving coordinates
     x = X(1);

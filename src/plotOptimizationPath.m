@@ -1,21 +1,34 @@
 function [] = plotOptimizationPath(x, functionID, parameters)
+    %--------------
+    % Documentation
+    %--------------
+    % This function has for purpose to plot iso-curves to 
+    % visualize the objective function of our statement as well
+    % as the optimization path of our optimization method
+    %
+    % Definition of the domain
+    lb = -11;
+    up = 11;
 
-    lb=-5;
-    up=5;
-    xi=lb:0.1:up;
-    f=zeros(length(xi),length(xi));
+    xi = lb : 0.1 : up;
+    f = zeros(length(xi), length(xi));
+
+    % Computing objective function's v
     for i=1:length(xi)
         for j=1:length(xi)
             f(j,i)=getObjFVal([xi(i);xi(j)],functionID);
         end
     end
+
+    % Initialization of figure
     figure('name','Optimization path')
     hold on
-    axis equal
-    xlabel('x_1')
-    ylabel('x_2')
+    xlabel('x')
+    ylabel('y')
     axis([lb up lb up])
     title('Optimization path')
+
+    % Plotting iso-curve
     switch functionID
         case 1
             [C,h]=contour(xi,xi,f,[0:1:2 2:6:20 20:20:80 80:40:200 200:100:2000]);
@@ -26,6 +39,7 @@ function [] = plotOptimizationPath(x, functionID, parameters)
     end
     hold on
     
+    % Adding iso-curve value
     ind=1;
     for i=1:size(x,2)-1
         plot(x(1,i),x(2,i),'.c','markersize',30)
@@ -36,21 +50,16 @@ function [] = plotOptimizationPath(x, functionID, parameters)
     plt = plot(x(1,end),x(2,end),'.c','markersize',30);
     text(x(1,end),x(2,end),num2str(ind-1),'horizontalalignment','center','verticalalignment','middle')
     
-    %--------------
-    % Added feature
-    %--------------
-    functionsName = ["SDM";
-                     "CGM";
-                     "BFGS"];
+    % Contains all the methods name to save the plot
+    methodName = ["SDM"; "CGM"; "BFGS"];
     
     % Saving the plot
-    plt_name = "../graphs/results/opti_path_" + functionsName(functionID) + ...
-               "_(" + int2str(parameters(2)) + "," + int2str(parameters(3)) + ")_" + ...
-               "f_value_" + sprintf('%.6f', getObjFVal(x(:, end),functionID)) + "_" + ...
-               "nb_iter_" + int2str(parameters(8)) + "_" + ...
-               "nb_iter_total_" + int2str(parameters(4)) + "_" + ...
-               "eps_" + sprintf('%.6f', parameters(5)) + "_" + ...
-               "nu_" + sprintf('%.6f', parameters(6)) + "_" + ...
-               "sc_" +  int2str(parameters(7)) + ".pdf";          
-    saveas(plt, plt_name)
+    saveas(plt,"../graphs/results/2D/opti_path_"   + methodName(parameters(1))   + ...
+               "_(" + int2str(parameters(2)) + "," + int2str(parameters(3))      + ")_"+ ...
+               "f_value_" + sprintf('%.6f', getObjFVal(x(:, end),functionID))    + "_" + ...
+               "nb_iter_"       + int2str(parameters(8))                         + "_" + ...
+               "nb_iter_total_" + int2str(parameters(4))                         + "_" + ...
+               "eps_"           + sprintf('%.6f', parameters(5))                 + "_" + ...
+               "nu_"            + sprintf('%.6f', parameters(6))                 + "_" + ...
+               "sc_"            +  int2str(parameters(7))                        + ".pdf");          
 end

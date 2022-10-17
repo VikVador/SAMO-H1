@@ -6,7 +6,7 @@ function plotObjF(functionID)
     % visualize the objective function of our statement
     %
     % Creation of the domain of vizualization
-    [x, y] = meshgrid(-100:0.5:100, -100:0.5:100);
+    [x, y] = meshgrid(-10 : 0.5 : 10, -10 : 0.5 : 10);
 
     % Computing the value of the objective function
     switch functionID
@@ -16,11 +16,13 @@ function plotObjF(functionID)
             fvalue = x.^4 + x.^3 - 2 * x.^2 - 2 * x + y.^2;
     end
 
-    % Plotting the 3D surface
+    % Plotting the 3D surface (Reducing color intensity and removing edges)
     plt = surf(x, y, fvalue, 'FaceAlpha', 0.8);
     plt.EdgeColor = 'none';
+    xlabel('x [-]');
+    ylabel('y [-]');
+    zlabel("f_" + int2str(functionID) + "(x, y)");
     
     % Saving the result
-    plt_name = "../graphs/surfaces/obj_fun_" + int2str(functionID) + ".pdf";
-    saveas(plt, plt_name)
+    saveas(plt, "../graphs/surfaces/obj_fun_" + int2str(functionID) + ".pdf");
 end
