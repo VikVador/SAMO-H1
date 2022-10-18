@@ -12,8 +12,7 @@ function alpha_value = alpha(i, index, alpha_const, functionID, grad)
     %
     %       - alpha* (strictly convex quadratic function) if functionID = 1
     %
-    %       - alpha* (line search method) if functionID diff. from 1
-                  
+    %       - alpha* (line search method) if functionID diff. from 1             
     %
     switch i
         case 1
@@ -34,12 +33,11 @@ function alpha_value = alpha(i, index, alpha_const, functionID, grad)
                A = [4, -3 ; -3, 4];
                 
                % Computing alpha
-               alpha_value = norm(grad)/(grad * A * transpose(grad));
+               alpha_value = norm(grad, 2)/(grad * A * transpose(grad));
               
-           % CASE 2 - Line search method
-           % https://www.mathworks.com/matlabcentral/answers/506524-line-search-algorithm-help
+           % CASE 2 - Line search method (symbolic)
            else
-              disp("A IMPLEMENTER") 
+              syms alpha
            end
     end
 end

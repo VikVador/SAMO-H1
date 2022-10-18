@@ -28,10 +28,10 @@ clearvars; close all; clc
 functionID = 1;
 
 % Defines the stopping criteria that will be used during optimization
-SC_index = 1;
+SC_index = 2;
 
 % Defines how alpha is computed
-ALPHA_index = 3;
+ALPHA_index = 1;
 
 % Defines the value taken by alpha if it is a constant (ALPHA_index = 1)
 ALPHA_cst = 0.1;
@@ -43,10 +43,10 @@ s_plot = false;
 xinit   = randi([-10 10], 1, 2);
 
 % Maximum number of iterations
-MaxIter = 2000;
+MaxIter = 1000;
 
 % Tolerance for the stoping criteria (1 & 2)
-Epsilon = 1e-5;         
+Epsilon = 1e-4;         
 
 % Tolerance for the stoping criteria (3)
 Nu = 1e-3;       
@@ -73,6 +73,16 @@ x       = zeros(n, MaxIter);    % Initialization of vector x
 x(:, 1) = xinit;                % Put xinit in vector x.
 
 %% --------
+%  Symbolic
+%  --------
+syms x1 x2;
+
+X         = [x1 x2];
+f(x1, x2) = getObjFVal(X, functionID);
+grad_f    = gradient(f);
+H_f       = hessian(f);
+
+%% --------
 %  Plotting
 %  --------
 % This section has for purpose to plot the 3D surface for f1 and f2
@@ -80,9 +90,9 @@ x(:, 1) = xinit;                % Put xinit in vector x.
 terminal(3, parameters);
 
 if s_plot
-    plotObjF(1);
+    plotObjF(f);
     waitforbuttonpress();
-    plotObjF(2);
+    plotObjF(f);
     waitforbuttonpress();
 end
 
@@ -93,28 +103,23 @@ terminal(4, parameters);
 
 switch method
     case 1        
-        for i = 2 : MaxIter
+        for i = 1 : MaxIter
         
-            % Step 1 - Computing the gradient
-            grad = getObjFGradVal(xinit, functionID);
-    
             % Step 2 - Computing the step direction
-            s   = - grad/norm(grad);
+            s   = - grad_f(x(1,i), x(2,i));
     
             % Step 3 - Computing the step length
-            alpha_val = alpha(ALPHA_index, i, ALPHA_cst, functionID, grad);
-    
-            % Step 4 - Updating our solution
-            xinit = xinit + alpha_val * transpose(s);
+            alpha_val = find_alpha(ALPHA_index, i, ALPHA_cst, functionID, s);
     
             % Step 5 - Storing the value for later vizualization
-            x(:, i) = xinit;
+            x(1, i + 1) = x(1, i) + alpha_val * s(1);
+            x(2, i + 1) = x(2, i) + alpha_val * s(2);
     
             % Step X - Updating the number of actual iterations
             parameters(8) = i;
             
             % Step 6 - Stopping criteria
-            if stoppingCriteria(SC_index, x(:, i - 1), xinit, functionID, Epsilon, Nu)
+            if stoppingCriteria(SC_index, x(:, i), x(:, i + 1), functionID, Epsilon, Nu)
                 break;
             end
         end
@@ -158,7 +163,7 @@ disp(" ");
 % Plotting the optimization path (2D & 3D) and saving it
 plotOptimizationPath(x, functionID, parameters);
 plotOptimizationPath3D(x, functionID, parameters);
-close all;
+
 
 
 

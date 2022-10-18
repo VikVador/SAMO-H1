@@ -24,7 +24,7 @@ function [] = plotOptimizationPath3D(X, functionID, parameters)
     % Surface
     %--------
     % Creation of the domain of vizualization for the surface
-    [xs, ys] = meshgrid(-100:0.5:100, -100:0.5:100);
+    [xs, ys] = meshgrid(-15:0.5:15, -15:0.5:15);
 
     % Computing the value of the objective function
     switch functionID
