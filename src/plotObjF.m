@@ -1,19 +1,11 @@
-function plotObjF(f)
+function plotObjF(f, functionID)
     %--------------
     % Documentation
     %--------------
-    % This function has for purpose to plot a 3D surface to 
-    % visualize the objective function of our statement
+    % Plot a 3D surface to visualize the objective function
     %
-    % Creation of the domain of vizualization
-    [x, y] = meshgrid(-10 : 0.5 : 10, -10 : 0.5 : 10);
-
-    % Computing the value of the objective function
-    
-    fvalue = f(x, y);
-
     % Plotting the 3D surface (Reducing color intensity and removing edges)
-    plt = surf(x, y, fvalue, 'FaceAlpha', 0.8);
+    plt = fsurf(f, [-10 10 -10 10], 'FaceAlpha', 0.5);
     plt.EdgeColor = 'none';
     xlabel('x [-]');
     ylabel('y [-]');

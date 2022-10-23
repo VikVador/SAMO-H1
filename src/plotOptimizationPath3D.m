@@ -1,4 +1,4 @@
-function [] = plotOptimizationPath3D(X, functionID, parameters)
+function [] = plotOptimizationPath3D(X, fun, functionID, parameters)
     %--------------
     % Documentation
     %--------------
@@ -6,42 +6,20 @@ function [] = plotOptimizationPath3D(X, functionID, parameters)
     % visualize the objective function of our statement as well
     % as the optimization path taken by our optimization method    
     %
-    %-----------
-    % OM Pathway
-    %-----------
-    % Contains the number of iterations of our algorithm
-    nb_iter = size(X, 2);
-
     % Stores the solution
-    solution = zeros(1, nb_iter);
-
-    % Computing solution value at each step
-    for i  = 1 : nb_iter
-        solution(i) = getObjFVal(X(:, i), functionID);
-    end
-
-    %--------
-    % Surface
-    %--------
-    % Creation of the domain of vizualization for the surface
-    [xs, ys] = meshgrid(-15:0.5:15, -15:0.5:15);
-
-    % Computing the value of the objective function
-    switch functionID
-        case 1
-            fvalue = 2 * xs.^2 - 3 * xs .* ys + 2 * ys.^2 - 2 * xs + 10 * ys - 1;
-        case 2
-            fvalue = xs.^4 + xs.^3 - 2 * xs.^2 - 2 * xs + ys.^2;
-    end
-
-    %-------------------------------------------
-    % Plotting the surface and optimization path
-    %-------------------------------------------
-    figure();
+    solution = fun(X(1, :), X(2, :));
 
     % Setting the plot to dim = 3 for a 3-D plot
+    figure();
     view(3);
     hold on;
+
+    % Surface of objective function
+    plt = fsurf(fun, [-10 10 -10 10], 'FaceAlpha', 0.5);
+    plt.EdgeColor = 'none';
+    xlabel('x [-]');
+    ylabel('y [-]');
+    zlabel("f_" + int2str(functionID) + "(x, y)");
 
     % Pathway
     plot3(X(1, :), X(2, :), solution, 'Color','r','LineWidth', 3)
@@ -66,13 +44,6 @@ function [] = plotOptimizationPath3D(X, functionID, parameters)
     % Adding labels to these points
     text(init_point(1), init_point(2), init_point(3) + 0.5, init_text)
     text(final_point(1), final_point(2), final_point(3) + 0.5,final_text)
-    
-    % Surface of objective function
-    plt = surf(xs, ys, fvalue, 'FaceAlpha', 0.5);
-    plt.EdgeColor = 'none';
-    xlabel('x [-]');
-    ylabel('y [-]');
-    zlabel("f_" + int2str(functionID) + "(x, y)");
     
     % Name of the different method for the plot saving
     methodName = ["SDM"; "CGM"; "BFGS"];

@@ -1,4 +1,4 @@
-function method = terminal(index, parameters)
+function method = terminal(index, parameters, ls_method)
     %--------------
     % Documentation
     %--------------
@@ -35,6 +35,9 @@ function method = terminal(index, parameters)
             functionsName = ["Steepest descent method";
                              "Conjugate gradients method with Fletcher-Reeves update rule";
                              "BFGS Quasi-Newton method"];
+            sc_name = ["max(grad_f) < eps";
+                       "norm(grad_f, 2) < eps";
+                       "f(x_(k+1)) - f(x_k) < nu"];
             disp("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
             disp("%                                                                         %");
             disp("%               Structural and Multidisciplinary Optimization             %");
@@ -48,20 +51,34 @@ function method = terminal(index, parameters)
             disp("     Parameters    ");
             disp("-------------------");
             disp(" ");
-            disp("Method  : " + functionsName(parameters(1)));
+            disp("Method         : " + functionsName(parameters(1)));
             disp(" ");
-            disp("Start   : (" + int2str(parameters(2)) + "," + int2str(parameters(3)) + ")");
+            switch ls_method
+                case 'NR'
+                    disp("Alpha comput.  : Newton Raphson");
+                case 'S'
+                    disp("Alpha comput.  : Secant");
+                case 'D'
+                    disp("Alpha comput.  : Dichotomy");
+                case 'BB'
+                    disp("Alpha comput.  : Black Box");
+                case 'DIV'
+                    disp("Alpha comput.  : Divergent Serie");
+                case 'CQ'
+                    disp("Alpha comput.  : Convex quadratic function");
+            end
             disp(" ");
-            disp("Nb iter : " + int2str(parameters(4)));
+            disp("Stop. Crit.    : " + sc_name(parameters(7)));
             disp(" ");
-            disp("Epsilon : " + sprintf('%.6f', parameters(5)));
+            disp("Max iterations : " + int2str(parameters(4)));
             disp(" ");
-            disp("Nu      : " + sprintf('%.6f', parameters(6)));
+            disp("X_0            : (" + int2str(parameters(2)) + ", " + int2str(parameters(3)) + ")");
             disp(" ");
-            %disp("SC Crit : " + int2str(parameters(7)));
-            disp("SC Crit : " + parameters(7));
+            disp("Epsilon        : " + sprintf('%.10f', parameters(5)));
             disp(" ");
-
+            disp("Nu             : " + sprintf('%.10f', parameters(6)));
+            disp(" ");
+            
          % Plotting the results (1)
         case 3
             disp("-------------------");
@@ -74,7 +91,7 @@ function method = terminal(index, parameters)
         % Plotting the results & optimizing (2)
         case 4
             clc;
-            terminal(2, parameters);
+            terminal(2, parameters, ls_method);
             disp("-------------------");
             disp("      Plotting     ");
             disp("-------------------");
@@ -86,12 +103,12 @@ function method = terminal(index, parameters)
             disp("    Optimizing     ");
             disp("-------------------");
             disp(" ");
-            disp("Solution                : ...");
+            disp("Solution                        : ...");
         
-            % Showing the results
+        % Showing the results
         case 5
             clc;
-            terminal(2, parameters);
+            terminal(2, parameters, ls_method);
             disp("-------------------");
             disp("      Plotting     ");
             disp("-------------------");
@@ -104,9 +121,9 @@ function method = terminal(index, parameters)
             disp("-------------------");
             disp(" ");
             if parameters(4) == parameters(8)
-                disp("Solution                 : Maximum number of iterations reached");
+                disp("Solution                         : Maximum number of iterations reached");
             else
-                disp("Solution                 : Done");
+                disp("Solution                         : Done");
             end
             disp(" ");
     end

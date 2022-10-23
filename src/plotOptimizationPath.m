@@ -1,4 +1,4 @@
-function [] = plotOptimizationPath(x, functionID, parameters)
+function [] = plotOptimizationPath(x, fun, functionID, parameters)
     %--------------
     % Documentation
     %--------------
@@ -7,17 +7,15 @@ function [] = plotOptimizationPath(x, functionID, parameters)
     % as the optimization path of our optimization method
     %
     % Definition of the domain
-    lb = -11;
-    up = 11;
+    lb = -10;
+    up = 10;
 
-    xi = lb : 0.1 : up;
+    xi = lb : 0.25 : up;
     f = zeros(length(xi), length(xi));
 
     % Computing objective function's v
-    for i=1:length(xi)
-        for j=1:length(xi)
-            f(j,i)=getObjFVal([xi(i);xi(j)],functionID);
-        end
+    for i = 1:length(xi)
+        f(:, i) = fun(xi(i), xi(:));
     end
 
     % Initialization of figure
@@ -56,7 +54,7 @@ function [] = plotOptimizationPath(x, functionID, parameters)
     % Saving the plot
     saveas(plt,"../graphs/results/2D/opti_path_"   + methodName(parameters(1))   + ...
                "_(" + int2str(parameters(2)) + "," + int2str(parameters(3))      + ")_"+ ...
-               "f_value_" + sprintf('%.6f', getObjFVal(x(:, end),functionID))    + "_" + ...
+               "f_value_" + sprintf('%.6f', fun(x(1, end), x(2, end)))    + "_" + ...
                "nb_iter_"       + int2str(parameters(8))                         + "_" + ...
                "nb_iter_total_" + int2str(parameters(4))                         + "_" + ...
                "eps_"           + sprintf('%.6f', parameters(5))                 + "_" + ...
