@@ -42,25 +42,25 @@ clearvars; close all; clc
 %  Parameters
 %  ----------
 % Defines the objective function
-functionID = 2;
+functionID = 1;
 
 % Defines the line search method
-ls_method = 'D';
+ls_method = 'NR';
 
 % Defines the stopping criteria
-SC_index = 2;
+SC_index = 3;
 
 % Defines if the surface plot of f is shown or not
-s_plot = true;
+s_plot = false;
 
 % Initial point 
-xinit   = randi([-10 10], 1, 2);
+xinit   = [2,2]; %randi([-10 10], 1, 2);
 
 % Maximum number of iterations
-MaxIter = 100;
+MaxIter = 30;
 
 % Tolerances for the stoping criteria 
-Epsilon = 1e-8;         
+Epsilon = 1e-4;         
 Nu      = 1e-4;       
 
 %% --------------
@@ -115,6 +115,8 @@ terminal(4, parameters, ls_method);
 % Stores the total number of iterations made by the compu. of alpha
 alpha_iters = 0;
 
+% (/!\ divergent serie is not a LS method)
+
 switch method
     case 1        
         for i = 1 : MaxIter
@@ -122,32 +124,62 @@ switch method
             % 1 - Finding steepest descent direction                    
             s = -[grad_f(x(1, i), x(2, i))];
           
-            % 2 - Computing alpha (/!\ divergent serie is not a LS method)
-            phi(alpha) = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, s);
-            alpha_iters = alpha_iters + alpha_it;
-
-            % 3 - Updating x
-            x(1,i+1) = x(1,i) + alpha_opt * s(1);
-            x(2,i+1) = x(2,i) + alpha_opt * s(2);
-            
-
-                
-            % 4 - Convergence check
-            if stoppingCriteria(SC_index, s, Epsilon, f, Nu, x(:,i), x(:,i+1))
-                parameters(8) = i; % Count iterations
+            % 2 - Convergence check (/!\ SC evaluated at grad(x_(k + 1)))
+            if i ~= 1 && stoppingCriteria(SC_index, s, Epsilon, f, Nu, x(:, i - 1), x(:, i))
+                parameters(8) = i;
                 break;
             end
 
+            % 3 - Computing alpha
+            phi(alpha) = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, s);
+            
+            % Updating the number of iterations to compute alpha
+            alpha_iters = alpha_iters + alpha_it;
+
+            % 4 - Updating x
+            x(1, i + 1) = x(1, i) + alpha_opt * s(1);
+            x(2, i + 1) = x(2, i) + alpha_opt * s(2);    
         end
         
         x = x(:, 1 : i); 
         
-    case 2        
-        for i = 2 : MaxIter
+    case 2 
 
-            % Conjugate gradients with Fletcher-Reeves update rule
+        % 1 - Initial direction d
+        d = -[grad_f(x(1, 1), x(2, 1))];
 
+        for i = 1 : MaxIter
+
+             % 2 - Computing alpha (/!\ divergent serie is not a LS method)
+            phi(alpha) = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, d);
+
+            % Updating the number of iterations to compute alpha
+            alpha_iters = alpha_iters + alpha_it;
+
+            % 3 - Updating x
+            x(1, i + 1) = x(1, i) + alpha_opt * d(1);
+            x(2, i + 1) = x(2, i) + alpha_opt * d(2);
+
+            % Computing gradient at step i + 1 for convergence check
+            g2 = [grad_f(x(1, i + 1), x(2, i + 1))];
+
+            % 4 - Convergence check
+            if stoppingCriteria(SC_index, g2, Epsilon, f, Nu, x(:, i), x(:, i + 1))
+                parameters(8) = i;
+                break;
+            end
+
+            % Computing gradient at former step i 
+            g1 = [grad_f(x(1, i), x(2, i))];
+
+            % Computing step beta using the method of Fletcher and Reeves
+            beta = norm(g2, 2)/norm(g1, 2);
+    
+            % 5 - Update of the direction d
+            d(1) = -g2(1) + beta * d(1);
+            d(2) = -g2(2) + beta * d(2);
         end
         
         x = x(:, 1 : i); 
@@ -166,6 +198,11 @@ end
 %  Plotting and showing results
 %  ----------------------------
 terminal(5, parameters, ls_method);
+
+% Fixing iteration value due to new position of SC in the loop
+if parameters(8) == 0
+    parameters(8) = MaxIter;
+end
 
 disp("Iterations (Method Optimization) : " + int2str(parameters(8)));
 disp(" ");
