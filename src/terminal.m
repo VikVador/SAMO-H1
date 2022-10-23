@@ -58,7 +58,8 @@ function method = terminal(index, parameters)
             disp(" ");
             disp("Nu      : " + sprintf('%.6f', parameters(6)));
             disp(" ");
-            disp("SC Crit : " + int2str(parameters(7)));
+            %disp("SC Crit : " + int2str(parameters(7)));
+            disp("SC Crit : " + parameters(7));
             disp(" ");
 
          % Plotting the results (1)

@@ -27,14 +27,11 @@ clearvars; close all; clc
 % Defines the objective function that will be used for the optimization
 functionID = 1;
 
+% Defines the used line search method
+ls_method = 'NR';
+
 % Defines the stopping criteria that will be used during optimization
 SC_index = 2;
-
-% Defines how alpha is computed
-ALPHA_index = 1;
-
-% Defines the value taken by alpha if it is a constant (ALPHA_index = 1)
-ALPHA_cst = 0.1;
 
 % Defines if the surface plot are shown or not
 s_plot = false;
@@ -43,13 +40,13 @@ s_plot = false;
 xinit   = randi([-10 10], 1, 2);
 
 % Maximum number of iterations
-MaxIter = 1000;
+MaxIter = 100;
 
 % Tolerance for the stoping criteria (1 & 2)
-Epsilon = 1e-4;         
+Epsilon = 1e-5;         
 
 % Tolerance for the stoping criteria (3)
-Nu = 1e-3;       
+Nu = 1e-4;       
 
 %% --------------
 %  Initialization
@@ -75,7 +72,7 @@ x(:, 1) = xinit;                % Put xinit in vector x.
 %% --------
 %  Symbolic
 %  --------
-syms x1 x2;
+syms x1 x2 alpha;
 
 X         = [x1 x2];
 f(x1, x2) = getObjFVal(X, functionID);
@@ -103,25 +100,33 @@ terminal(4, parameters);
 
 switch method
     case 1        
-        for i = 1 : MaxIter
-        
-            % Step 2 - Computing the step direction
-            s   = - grad_f(x(1,i), x(2,i));
-    
-            % Step 3 - Computing the step length
-            alpha_val = find_alpha(ALPHA_index, i, ALPHA_cst, functionID, s);
-    
-            % Step 5 - Storing the value for later vizualization
-            x(1, i + 1) = x(1, i) + alpha_val * s(1);
-            x(2, i + 1) = x(2, i) + alpha_val * s(2);
-    
-            % Step X - Updating the number of actual iterations
-            parameters(8) = i;
-            
-            % Step 6 - Stopping criteria
-            if stoppingCriteria(SC_index, x(:, i), x(:, i + 1), functionID, Epsilon, Nu)
+        for i=1:MaxIter
+            %---
+            % Finding steepest descent direction
+            %---           
+            s = -[grad_f(x(1,i),x(2,i))];
+          
+            %---
+            % Line search methods
+            %---
+            phi(alpha) = f(x(1,i)+alpha*s(1) , x(2,i)+alpha*s(2));
+            alpha_opt = find_alpha(phi, ls_method, 0.1, i, H_f, s);
+                        
+            %---
+            % Update x
+            %---
+            x(1,i+1) = x(1,i) + alpha_opt*s(1);
+            x(2,i+1) = x(2,i) + alpha_opt*s(2);
+
+            %---
+            % Check convergence
+            %---
+            if stoppingCriteria(SC_index, s, Epsilon, f, Nu, x(:,i), x(:,i+1))
+                % Count iterations
+                parameters(8) = i;
                 break;
             end
+
         end
         
         x = x(:, 1 : i); 
