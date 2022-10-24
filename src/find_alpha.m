@@ -1,4 +1,4 @@
-function [alpha, iter] = find_alpha(phi, method, h, k, H, s)
+function [alpha, iter, calls_to_f] = find_alpha(phi, method, h, k, H, s)
     %--------------
     % Documentation
     %--------------
@@ -15,8 +15,10 @@ function [alpha, iter] = find_alpha(phi, method, h, k, H, s)
     % - H : the Hessian matrix of f
     % - s : the gradient of f at the considered point
     % 
-    % Stores the number of iterations
-    iter = 0;
+    % Stores the number of iterations to compute alpha as well as the
+    % number of calls to the objective function f
+    iter       = 0;
+    calls_to_f = 0;
 
     switch method
 
@@ -36,6 +38,7 @@ function [alpha, iter] = find_alpha(phi, method, h, k, H, s)
                 alpha0 = alpha0 - vpa(dphi(alpha0))/vpa(d2phi(alpha0));
                 alpha = alpha0;
                 iter = iter + 1;
+                calls_to_f = calls_to_f + 2;                               % 2 calls : dphi and d2phi
             end
 
         case 'D'
@@ -46,6 +49,7 @@ function [alpha, iter] = find_alpha(phi, method, h, k, H, s)
             alpha_k = h;
             while(dphi(alpha_k) < 0)
                 alpha_k = alpha_k + h;
+                calls_to_f = calls_to_f + 1;                               % 1 call : dphi
             end
 
             % Iterative update
@@ -59,6 +63,8 @@ function [alpha, iter] = find_alpha(phi, method, h, k, H, s)
                 else
                     alpha_k = alpha;
                 end
+                calls_to_f = calls_to_f + 1;                               % 1 call : dphi in if condition
+
                 alpha = 0.5*(alpha_k + alpha_kminus1);
 
                 iter = iter + 1;
@@ -72,22 +78,26 @@ function [alpha, iter] = find_alpha(phi, method, h, k, H, s)
             alpha_k = h;
             while(dphi(alpha_k) < 0)
                 alpha_k = alpha_k + h;
+                calls_to_f = calls_to_f + 1;                               % 1 call : dphi 
             end
             alpha = alpha_k/2;
 
             % Iterative update
             alpha_kminus1 = 0;
             while(max(abs(alpha - alpha_k) , abs(alpha - alpha_kminus1)) > 1e-5)
-                alpha = alpha_k - vpa(dphi(alpha_k)) * (alpha_k - alpha_kminus1)/( vpa(dphi(alpha_k)) - vpa(dphi(alpha_kminus1)) );
+                dphi_alpha_k = dphi(alpha_k); % Save 1 call
+                alpha = alpha_k - vpa(dphi_alpha_k) * (alpha_k - alpha_kminus1)/( vpa(dphi_alpha_k) - vpa(dphi(alpha_kminus1)) );
                 alpha_kminus1 = alpha_k;
                 alpha_k = alpha;
                 iter = iter + 1;
+                calls_to_f = calls_to_f + 3;                               % 2 calls : dphi_alpha_k and dphi(alpha_kminus1)
             end
 
         case 'BB'
             alpha = solve(diff(phi) == 0);
-            alpha = min(alpha( [isAlways(alpha>0)] )); % Take the minimum positive alpha
+            alpha = min(alpha([isAlways(alpha>0)] )); % Take the minimum positive alpha
             iter = iter + 1;
+            calls_to_f = 1;                                                % 1 call : dphi even if we don't know exactly since BB
 
         case 'DIV'
             alpha = 1/(k + 1);

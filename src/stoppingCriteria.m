@@ -28,7 +28,7 @@ function stop = stoppingCriteria(i, s, eps, f, nu, x_k, x_kplus1)
             end
         
         case 3
-            res = abs( f(x_kplus1(1), x_kplus1(2)) - f(x_k(1), x_k(2)) );
+            res = abs(f(x_kplus1(1), x_kplus1(2)) - f(x_k(1), x_k(2)) );
             % Step 2 - Check if residual is small enough
             if res < nu
                 stop = true;

@@ -51,10 +51,10 @@ ls_method = 'NR';
 SC_index = 3;
 
 % Defines if the surface plot of f is shown or not
-s_plot = false;
+s_plot = true;
 
 % Initial point 
-xinit   = [2,2]; %randi([-10 10], 1, 2);
+xinit   = randi([-10 10], 1, 2);
 
 % Maximum number of iterations
 MaxIter = 30;
@@ -151,7 +151,7 @@ switch method
 
         for i = 1 : MaxIter
 
-             % 2 - Computing alpha (/!\ divergent serie is not a LS method)
+            % 2 - Computing alpha (/!\ divergent serie is not a LS method)
             phi(alpha) = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
             [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, d);
 
