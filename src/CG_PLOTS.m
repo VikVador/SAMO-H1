@@ -24,6 +24,9 @@ xinit_values = [3 3; -3 -3];
 % Maximum number of iterations
 MaxIter = 50;    
 
+% Maximum number of iterations to compute alpha
+MaxIter_alpha = 20;    
+
 % Defining stopping criteria and alpha used for our comparison
 SC_values    = [1, 2, 3];
 ALPHA_values = ["NR", "S", "D", "BB", "DIV", "CQ"];
@@ -51,7 +54,7 @@ iter_call   = zeros(6, 3);
 
 % For the plots and terminal
 alpha_name = ["Newton raphson"; "Secant"; "Dichotomy"; "Black Box"; "Divergent serie"; "Convex quadratic function"];
-sc_name    = ["max(grad_f) < eps"; "norm(grad_f, 2) < eps"; "f(x_(k+1)) - f(x_k) < nu"];
+sc_name    = ["max(abs(grad_f)) < eps"; "norm(grad_f, 2) < eps"; "f(x_(k+1)) - f(x_k) < nu"];
 
 % Information over terminal (1)
 disp("Epsilon : " + sprintf('%.10f', Epsilon));
@@ -125,7 +128,7 @@ for s_val = 1 : size(SC_values, 2)
                 %  ------------------------------------------------------------------------
                 % 2 - Computing alpha
                 phi(alpha) = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
-                [alpha_opt, alpha_it, f_call_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, d);   % 1 call to f each time phi is used
+                [alpha_opt, alpha_it, f_call_it]  = find_alpha(phi, ls_method, MaxIter_alpha, 0.1, i, H_f, d);   % 1 call to f each time phi is used
     
                 % Updating the number of iterations
                 alpha_iters = alpha_iters + alpha_it;

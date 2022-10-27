@@ -62,6 +62,9 @@ xinit   = randi([-10 10], 1, 2);
 % Maximum number of iterations
 MaxIter = 30;
 
+% Maximum number of iterations to compute alpha
+MaxIter_alpha = 50;    
+
 % Tolerances for the stoping criteria 
 Epsilon = 1e-4;         
 Nu      = 1e-4;       
@@ -132,7 +135,7 @@ switch method
 
             % 3 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, s);
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, MaxIter_alpha, 0.1, i, H_f, s);
             
             % Updating the number of iterations to compute alpha
             alpha_iters = alpha_iters + alpha_it;
@@ -153,7 +156,7 @@ switch method
 
             % 2 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, d);
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, MaxIter_alpha, 0.1, i, H_f, d);
 
             % Updating the number of iterations to compute alpha
             alpha_iters = alpha_iters + alpha_it;
@@ -187,7 +190,9 @@ switch method
     case 3        
         for i = 2 : MaxIter
             
+            %-------------------------------
             % ----- BFGS Quasi-Newton ------
+            %-------------------------------
 
         end
         
