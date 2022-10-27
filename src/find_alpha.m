@@ -19,6 +19,8 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, h, k, H, s)
     % number of calls to the objective function f
     iter       = 0;
     calls_to_f = 0;
+    max_iteration_alpha = 50;
+    index_iteration_alpha = 0;
 
     switch method
 
@@ -31,14 +33,15 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, h, k, H, s)
             alpha0 = 0;
             previous_alpha = alpha0;
             alpha = 1;
-
+            
             % Iterative update
-            while(abs(alpha - previous_alpha) > 1e-5)
+            while(abs(alpha - previous_alpha) > 1e-5 && index_iteration_alpha < max_iteration_alpha)
                 previous_alpha = alpha0;
                 alpha0 = alpha0 - vpa(dphi(alpha0))/vpa(d2phi(alpha0));
                 alpha = alpha0;
                 iter = iter + 1;
                 calls_to_f = calls_to_f + 2;                               % 2 calls : dphi and d2phi
+                index_iteration_alpha = index_iteration_alpha + 1;
             end
 
         case 'D'

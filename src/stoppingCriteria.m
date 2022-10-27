@@ -5,7 +5,7 @@ function stop = stoppingCriteria(i, s, eps, f, nu, x_k, x_kplus1)
     % This function determines if the stopping criteria is
     % reached or not where, for a given value of i, one has:
     %
-    % 1 - max_value(grad_f(x_k+1)) < eps
+    % 1 - max_value(abs(grad_f(x_k+1))) < eps
     % 
     % 2 - norm(grad_f)^2 < eps
     %
@@ -17,13 +17,13 @@ function stop = stoppingCriteria(i, s, eps, f, nu, x_k, x_kplus1)
     switch i
         case 1
             % Step 2 - Check if max value is < eps
-            if max(s) < eps
+            if max(abs(s)) < eps
                 stop = true;
             end
 
         case 2
             % Step 2 - Check if sum of all grad element to ^2 is < eps
-            if norm(s)^2 < eps
+            if norm(s, 2) < eps
                 stop = true;
             end
         
