@@ -10,26 +10,22 @@ function stop = stoppingCriteria(i, s, eps, f, nu, x_k, x_kplus1)
     % 2 - norm(grad_f)^2 < eps
     %
     % 3 - |f(x_k+1) - f(x_k)| < nu
-    
-    % Initialization of the SC value
+    %
     stop = false;
 
     switch i
         case 1
-            % Step 2 - Check if max value is < eps
             if max(abs(s)) < eps
                 stop = true;
             end
 
         case 2
-            % Step 2 - Check if sum of all grad element to ^2 is < eps
             if norm(s, 2) < eps
                 stop = true;
             end
         
         case 3
             res = abs(f(x_kplus1(1), x_kplus1(2)) - f(x_k(1), x_k(2)) );
-            % Step 2 - Check if residual is small enough
             if res < nu
                 stop = true;
             end

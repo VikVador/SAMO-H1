@@ -51,7 +51,10 @@ ls_method = 'NR';
 SC_index = 3;
 
 % Defines if the surface plot of f is shown or not
-s_plot = true;
+s_plot = false;
+
+% Defines if the plots are saved or not (ARNAUD)
+save_plot = false;
 
 % Initial point 
 xinit   = randi([-10 10], 1, 2);
@@ -101,9 +104,8 @@ H_f       = hessian(f);
 % Plot the 3D surface of the objective function being optimized
 %
 terminal(3, parameters, ls_method);
-
 if s_plot
-    plotObjF(f, functionID);
+    plotObjF(f, functionID, save_plot);
     waitforbuttonpress();
 end
 
@@ -114,8 +116,6 @@ terminal(4, parameters, ls_method);
 
 % Stores the total number of iterations made by the compu. of alpha
 alpha_iters = 0;
-
-% (/!\ divergent serie is not a LS method)
 
 switch method
     case 1        
@@ -131,7 +131,7 @@ switch method
             end
 
             % 3 - Computing alpha
-            phi(alpha) = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
+            phi(alpha)             = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
             [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, s);
             
             % Updating the number of iterations to compute alpha
@@ -151,8 +151,8 @@ switch method
 
         for i = 1 : MaxIter
 
-            % 2 - Computing alpha (/!\ divergent serie is not a LS method)
-            phi(alpha) = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
+            % 2 - Computing alpha
+            phi(alpha)             = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
             [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, d);
 
             % Updating the number of iterations to compute alpha
@@ -187,7 +187,7 @@ switch method
     case 3        
         for i = 2 : MaxIter
             
-            % BFGS Quasi-Newton
+            % ----- BFGS Quasi-Newton ------
 
         end
         
@@ -218,9 +218,9 @@ disp(" ");
 disp(" ");
 
 % Plotting optimization path (2D & 3D) and evolution of f
-plotEvolutionObjF(x, f, functionID, parameters)
-plotOptimizationPath(x, f, functionID, parameters);
-plotOptimizationPath3D(x, f, functionID, parameters);
+plotEvolutionObjF(x, f, functionID, parameters, save_plot)
+plotOptimizationPath(x, f, functionID, parameters, save_plot);
+plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
 
 
 
