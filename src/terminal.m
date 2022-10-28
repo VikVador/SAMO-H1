@@ -35,7 +35,7 @@ function method = terminal(index, parameters, ls_method)
             functionsName = ["Steepest descent method";
                              "Conjugate gradients method with Fletcher-Reeves update rule";
                              "BFGS Quasi-Newton method"];
-            sc_name = ["max(grad_f) < eps";
+            sc_name = ["max(abs(grad_f)) < eps";
                        "norm(grad_f, 2) < eps";
                        "f(x_(k+1)) - f(x_k) < nu"];
             disp("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");

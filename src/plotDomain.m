@@ -12,7 +12,7 @@ clearvars; close all; clc
 %  Parameters
 %  ----------
 % Defines the objective function
-functionID = 2;
+functionID = 1;
 
 % Maximum number of iterations
 MaxIter = 100;
@@ -21,7 +21,7 @@ MaxIter = 100;
 MaxIter_alpha = 100;    
 
 % Step size for mesh
-n = 0.25;
+n = 0.5;
 
 % Size of the square domain ([-bound, bound])
 bond = 10;
@@ -70,15 +70,25 @@ classificator_d = 1 + class_precision/100;
 %  Optimization
 %  ------------
 % Displaying information over terminal (1)
-disp("Computing solutions, this may take a while...");
+disp("-------------------");
+disp("Computing solutions");
+disp("-------------------");
 
 % Counts the total number of iteration
 nb_iterations = 0;
 
+% Measure timing 
+time = 0;
+
 % Looping over the domain
 for xi = 1 : size(x_dom, 1)
-
     
+    % Displaying information over terminal (2)
+    disp(int2str(xi) + "/" + int2str(size(x_dom, 1)) + " - Time left = " + ...
+         num2str(time * (size(x_dom, 1) - xi)) + " [s] = " + ...
+         num2str(time * (size(x_dom, 1) - xi)/60) + " [min]");
+    tic;
+
     for yi = 1 : size(y_dom, 1)
             
         % New initial point
@@ -98,7 +108,7 @@ for xi = 1 : size(x_dom, 1)
                 break;
             end
             phi(alpha) = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, MaxIter_alpha, 0.1, i, H_f, s);
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, s, s);
             x(1, i + 1) = x(1, i) + alpha_opt * s(1);
             x(2, i + 1) = x(2, i) + alpha_opt * s(2);    
         end
@@ -133,6 +143,9 @@ for xi = 1 : size(x_dom, 1)
             end
         end
     end
+
+    % Update time
+    time = toc;
 end
 
 %% --------------------------------------

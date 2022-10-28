@@ -45,10 +45,10 @@ clearvars; close all; clc
 functionID = 1;
 
 % Defines the line search method
-ls_method = 'NR';
+ls_method = 'CQ';
 
 % Defines the stopping criteria
-SC_index = 3;
+SC_index = 2;
 
 % Defines if the surface plot of f is shown or not
 s_plot = false;
@@ -57,17 +57,17 @@ s_plot = false;
 save_plot = false;
 
 % Initial point 
-xinit   = randi([-10 10], 1, 2);
+xinit   = [10, 10];
 
 % Maximum number of iterations
-MaxIter = 30;
+MaxIter = 20;
 
 % Maximum number of iterations to compute alpha
 MaxIter_alpha = 50;    
 
 % Tolerances for the stoping criteria 
-Epsilon = 1e-4;         
-Nu      = 1e-4;       
+Epsilon = 1e-5;         
+Nu      = 1e-5;       
 
 %% --------------
 %  Initialization
@@ -135,7 +135,7 @@ switch method
 
             % 3 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, MaxIter_alpha, 0.1, i, H_f, s);
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, s, s);
             
             % Updating the number of iterations to compute alpha
             alpha_iters = alpha_iters + alpha_it;
@@ -149,40 +149,38 @@ switch method
         
     case 2 
 
-        % 1 - Initial direction d
-        d = -[grad_f(x(1, 1), x(2, 1))];
+        % 1 - Initialization of gradient and direction
+        g1 = [grad_f(x(1, 1), x(2, 1))];
+        d  = -g1;
 
         for i = 1 : MaxIter
-
+            
             % 2 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, MaxIter_alpha, 0.1, i, H_f, d);
-
-            % Updating the number of iterations to compute alpha
-            alpha_iters = alpha_iters + alpha_it;
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g1, d);
+            alpha_iters            = alpha_iters + alpha_it;
 
             % 3 - Updating x
             x(1, i + 1) = x(1, i) + alpha_opt * d(1);
-            x(2, i + 1) = x(2, i) + alpha_opt * d(2);
+            x(2, i + 1) = x(2, i) + alpha_opt * d(2);   
+            
+            % 4 - Computing new gradient
+            g0 = g1;
+            g1 = [grad_f(x(1, i + 1), x(2, i + 1))];
 
-            % Computing gradient at step i + 1 for convergence check
-            g2 = [grad_f(x(1, i + 1), x(2, i + 1))];
-
-            % 4 - Convergence check
-            if stoppingCriteria(SC_index, g2, Epsilon, f, Nu, x(:, i), x(:, i + 1))
+            % 5 - Convergence check
+            if i ~= 1 && stoppingCriteria(SC_index, g1, Epsilon, f, Nu, x(:, i), x(:, i + 1))
                 parameters(8) = i;
                 break;
             end
 
-            % Computing gradient at former step i 
-            g1 = [grad_f(x(1, i), x(2, i))];
+            % 6 - Computing beta using Method of Fletcher and Reeves
+            beta = norm(g1, 2)/norm(g0, 2);
 
-            % Computing step beta using the method of Fletcher and Reeves
-            beta = norm(g2, 2)/norm(g1, 2);
-    
-            % 5 - Update of the direction d
-            d(1) = -g2(1) + beta * d(1);
-            d(2) = -g2(2) + beta * d(2);
+            % 7 - Computing new direction
+            d(1) = -g1(1) + beta * d(1);
+            d(2) = -g1(2) + beta * d(2);
+
         end
         
         x = x(:, 1 : i); 
