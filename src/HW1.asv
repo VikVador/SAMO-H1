@@ -57,7 +57,7 @@ s_plot = false;
 save_plot = false;
 
 % Initial point 
-xinit   = [10, 9];
+xinit   = [10, 10];
 
 % Maximum number of iterations
 MaxIter = 10;
@@ -168,18 +168,18 @@ switch method
             
             % 4 - Computing new gradient
             g0 = g1;
-            x(:,i+1)
-            grad_f(x(1,i+1),x(2,i+1))
-            g1 = [grad_f(x(1, i + 1), x(2, i + 1))]
+            g1 = [grad_f(x(1, i + 1), x(2, i + 1))];
 
             % 5 - Convergence check
+            vpa(norm(g1, 2));
+
             if i ~= 1 && stoppingCriteria(SC_index, g1, Epsilon, f, Nu, x(:, i), x(:, i + 1))
                 parameters(8) = i;
                 break;
             end
 
             % 6 - Computing beta using Method of Fletcher and Reeves
-            beta = vpa(norm(g1, 2)/norm(g0, 2))^2;
+            beta = vpa(norm(g1, 2)/norm(g0, 2))^1;
 
             % 7 - Computing new direction
             d(1) = -g1(1) + beta * d(1);

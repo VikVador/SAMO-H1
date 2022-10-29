@@ -1,4 +1,4 @@
-function plotObjF(f, functionID)
+function plotObjF(f, functionID, save_plot)
     %--------------
     % Documentation
     %--------------
@@ -12,5 +12,7 @@ function plotObjF(f, functionID)
     zlabel("f_" + int2str(functionID) + "(x, y)");
     
     % Saving the result
-    saveas(plt, "../graphs/surfaces/obj_fun_" + int2str(functionID) + ".pdf");
+    if save_plot
+        saveas(plt, "../graphs/surfaces/obj_fun_" + int2str(functionID) + ".pdf");
+    end
 end

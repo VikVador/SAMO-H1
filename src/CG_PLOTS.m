@@ -19,10 +19,13 @@ clearvars; close all; clc
 functionID = 1;
 
 % Initial points
-xinit_values = [3 3; -3 -3]; 
+xinit_values = [10 10; -10 -10]; 
 
-% Maximum number of iterations
-MaxIter = 50;    
+% Maximum number of iterations in the main loop
+MaxIter = 14;    
+
+% Maximum number of iterations to compute alpha
+MaxIter_alpha = 50;    
 
 % Defining stopping criteria and alpha used for our comparison
 SC_values    = [1, 2, 3];
@@ -51,7 +54,7 @@ iter_call   = zeros(6, 3);
 
 % For the plots and terminal
 alpha_name = ["Newton raphson"; "Secant"; "Dichotomy"; "Black Box"; "Divergent serie"; "Convex quadratic function"];
-sc_name    = ["max(grad_f) < eps"; "norm(grad_f, 2) < eps"; "f(x_(k+1)) - f(x_k) < nu"];
+sc_name    = ["max(abs(grad_f)) < eps"; "norm(grad_f, 2) < eps"; "f(x_(k+1)) - f(x_k) < nu"];
 
 % Information over terminal (1)
 disp("Epsilon : " + sprintf('%.10f', Epsilon));
@@ -89,7 +92,7 @@ for s_val = 1 : size(SC_values, 2)
             % Stores the number of iterations/calls during the optimization process
             alpha_iters = 0;
             opti_iters  = 0;
-            f_calls     = 1; % Due to step 1 of CG
+            f_calls     = 0;
 
             %--------------------------------------------------------------
             %                           SECURITY
@@ -99,10 +102,6 @@ for s_val = 1 : size(SC_values, 2)
                 continue;
             end
 
-            % Security (2) - f2 doest not like divergent series apparently
-            if ls_method == "DIV" && functionID == 2
-                continue;
-            end
             %--------------------------------------------------------------
             %                           SECURITY
             %--------------------------------------------------------------
@@ -113,46 +112,41 @@ for s_val = 1 : size(SC_values, 2)
             n       = 2;                    
             xinit   = reshape(xinit, 2, 1); 
             x       = zeros(n, MaxIter);   
-            x(:, 1) = xinit;               
+            
+            % 1 - Initialization of gradient and direction
+            g1 = [grad_f(x(1, 1), x(2, 1))];
+            d  = -g1;
     
-            % 1 - Initial direction d
-            d = -[grad_f(x(1, 1), x(2, 1))];
-
             for i = 1 : MaxIter
-    
-                %  ------------------------------------------------------------------------
-                %                                PLACE METHOD HERE
-                %  ------------------------------------------------------------------------
+                
                 % 2 - Computing alpha
-                phi(alpha) = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
-                [alpha_opt, alpha_it, f_call_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, d);   % 1 call to f each time phi is used
-    
+                phi(alpha)                        = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
+                [alpha_opt, alpha_it, f_call_it]  = find_alpha(phi, ls_method, 2, MaxIter_alpha, 0.1, i, H_f, g1, d);
+                
                 % Updating the number of iterations
                 alpha_iters = alpha_iters + alpha_it;
                 f_calls     = f_calls + f_call_it;
     
                 % 3 - Updating x
                 x(1, i + 1) = x(1, i) + alpha_opt * d(1);
-                x(2, i + 1) = x(2, i) + alpha_opt * d(2);
+                x(2, i + 1) = x(2, i) + alpha_opt * d(2);   
+                
+                % 4 - Computing new gradient
+                g0 = g1;
+                g1 = [grad_f(x(1, i + 1), x(2, i + 1))];
     
-                % Computing gradient at step i + 1 for convergence check
-                g2 = [grad_f(x(1, i + 1), x(2, i + 1))];                                          % 1 call to compute gradient
-    
-                % 4 - Convergence check
-                if stoppingCriteria(SC_index, g2, Epsilon, f, Nu, x(:, i), x(:, i + 1))           % 2 calls if SC = 3
-                    opti_iters = i;
+                % 5 - Convergence check
+                if i ~= 1 && stoppingCriteria(SC_index, g1, Epsilon, f, Nu, x(:, i), x(:, i + 1))
+                    parameters(8) = i;
                     break;
                 end
-                
-                % Computing gradient at former step i 
-                g1 = [grad_f(x(1, i), x(2, i))];                                                  % 1 call to compute gradient
     
-                % Computing step beta using the method of Fletcher and Reeves
-                beta = norm(g2, 2)/norm(g1, 2);
-        
-                % 5 - Update of the direction d
-                d(1) = -g2(1) + beta * d(1);
-                d(2) = -g2(2) + beta * d(2);
+                % 6 - Computing beta using Method of Fletcher and Reeves
+                beta = norm(g1, 2)/norm(g0, 2);
+    
+                % 7 - Computing new direction
+                d(1) = -g1(1) + beta * d(1);
+                d(2) = -g1(2) + beta * d(2);
 
                 % Updating the number of iterations
                 if SC_index == 3
@@ -160,14 +154,15 @@ for s_val = 1 : size(SC_values, 2)
                 else
                     f_calls = f_calls + 1 + 1;
                 end
-           
-                %  ------------------------------------------------------------------------
-                %                                PLACE METHOD END
-                %  ------------------------------------------------------------------------
+
+                % We don't know how many calls for the BB
+                if ls_method == "BB"
+                    f_calls = 0;
+                end
             end
+
+            x = x(:, 1 : i); 
                 
-            x = x(:, 1 : i);
-            
             %  ------------------------------------------------------------
             %                   Others (don't need to look)
             %  ------------------------------------------------------------
@@ -206,7 +201,7 @@ for s_val = 1 : size(SC_values, 2)
             
             % Plotting evolution curve (shape differs depends on starting point)
             if xi == 1
-                plot(iterations, f(x(1, :), x(2, :)), "-",  'Color', cur_color, 'LineWidth', 2);
+                plot(iterations, f(x(1, :), x(2, :)), "-", 'Color', cur_color, 'LineWidth', 2);
             else
                 plot(iterations, f(x(1, :), x(2, :)), "--", 'Color', cur_color, 'LineWidth', 2);
             end
@@ -218,27 +213,26 @@ for s_val = 1 : size(SC_values, 2)
     % -------------------------------------------------------------
     %       Plotting (1) - Making graph look pretty
     % -------------------------------------------------------------
-    xlabel('Number of iterations [-]', 'FontSize', 20);
-    ylabel("f_" + int2str(functionID) + "(x, y)", 'Fontsize', 20);
+    xlabel('Number of iterations [-]', 'FontSize', 18);
+    ylabel("f_" + int2str(functionID) + "(x, y)", 'Fontsize', 18);
     if functionID == 1
-        h = legend('Newton raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie', 'Convex quadratic function');
+        h = legend('Newton-Raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie', 'Convex quadratic function');
     else
-        h = legend('Newton raphson','Secant', 'Dichotomy', 'Black Box');
+        h = legend('Newton-Raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie');
     end
-    set(h,'FontSize', 20);
-    set(gca,'fontsize', 20);
-    set(gcf,'position',[50, 50, 750, 600]);
+    set(h,'FontSize', 18);
+    set(gca,'fontsize', 18);
     grid on;
+    xlim([1, MaxIter]);
     saveas(plt, "../graphs/report/CG/" + int2str(functionID) + "/f" + int2str(functionID) + "_" + ...
                 sc_name(s_val) + "_(" + int2str(xinit_values(1,1)) + "," + int2str(xinit_values(1,2)) + ")_" + ...
-                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".png");
+                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".pdf");
 
     % -------------------------------------------------------------
     %     Plotting (2) - Bar plot of iterations and calls to f
     % -------------------------------------------------------------
     plt = figure();
     b = bar(iter_call);
-    ylabel('Number of iterations/calls to f [-]', 'FontSize', 20);
     ylim([0, max(max(iter_call)) * 1.1]) 
     % Note : Increase by 10 % the vertical height for no 
     % overlap between text and the top of the plot figure
@@ -248,33 +242,34 @@ for s_val = 1 : size(SC_values, 2)
     ytips1 = b(1).YEndPoints;
     labels1 = string(b(1).YData);
     text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
-        'VerticalAlignment','bottom', 'FontSize', 18)
+        'VerticalAlignment','bottom', 'FontSize', 15)
 
     % This is for bar 2
     xtips2 = b(2).XEndPoints;
     ytips2 = b(2).YEndPoints;
     labels2 = string(b(2).YData);
     text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
-        'VerticalAlignment','bottom', 'FontSize', 18)
+        'VerticalAlignment','bottom', 'FontSize', 15)
    
     % This is for bar 3
     xtips3 = b(3).XEndPoints;
     ytips3 = b(3).YEndPoints;
     labels3 = string(b(3).YData);
     text(xtips3,ytips3,labels3,'HorizontalAlignment','center',...
-        'VerticalAlignment','bottom', 'FontSize', 18)
+        'VerticalAlignment','bottom', 'FontSize', 15)
 
     % Making the plot good looking
-    set(h,'FontSize', 20);
-    set(gca,'fontsize', 20);
+    set(h,'FontSize', 18);
+    set(gca,'fontsize', 18);
 
     % Adding method name as labels
-    set(gca, 'XTickLabel',{'NR','S','D','BB','DIV','CQ'})
-    set(gcf,'position',[50, 50, 750, 600]);
+    set(gca, 'XTickLabel',{'Newton-Raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie', 'Conv. quad. fun.'}, 'FontSize', 12)
+    xtickangle(20);
+    ylabel('Number of iterations/calls to f [-]', 'FontSize', 20);
     grid on;
     saveas(plt, "../graphs/report/CG/" + int2str(functionID) + "/bar_f" + int2str(functionID) + "_" + ...
                 sc_name(s_val) + "_(" + int2str(xinit_values(1,1)) + "," + int2str(xinit_values(1,2)) + ")_" + ...
-                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".png");
+                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".pdf");
 end
 
 
