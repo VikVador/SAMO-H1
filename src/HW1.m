@@ -37,36 +37,36 @@
 %   f(x_(k+1)) - f(x_k) < nu
 %
 
-%clearvars; close all; clc
+clearvars; close all; clc
 %% ----------
 %  Parameters
 %  ----------
 % Defines the objective function
-functionID = 2 ;
+functionID = 1;
 
 % Defines the line search method
-ls_method = 'CQ';
+ls_method = 'NR';
 
 % Defines the stopping criteria
 SC_index = 2;
 
 % Defines if the surface plot of f is shown or not
-s_plot = false;
+s_plot = true;
 
 % Defines if the plots are saved or not (ARNAUD)
-save_plot = false;
+save_plot = true;
 
 % Initial point 
 xinit   = [10, 10];
 
 % Maximum number of iterations
-MaxIter = 200;
+MaxIter = 100;
 
 % Maximum number of iterations to compute alpha
 MaxIter_alpha = 100;    
 
 % Tolerances for the stoping criteria 
-Epsilon = 1e-20;         
+Epsilon = 1e-5;         
 Nu      = 1e-5;       
 
 %% --------------
@@ -254,10 +254,9 @@ disp(" ");
 disp(" ");
 
 % Plotting optimization path (2D & 3D) and evolution of f
-
-%plotEvolutionObjF(x, f, functionID, parameters, save_plot)
+plotEvolutionObjF(x, f, functionID, parameters, save_plot)
 plotOptimizationPath(x, f, functionID, parameters, save_plot);
-%plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
+plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
 
 
 

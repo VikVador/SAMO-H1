@@ -19,7 +19,7 @@ function [] = plotOptimizationPath(x, fun, functionID, parameters, save_plot)
     end
 
     % Initialization of figure
-    %figure('name','Optimization path')
+    figure('name','Optimization path')
     hold on
     xlabel('x')
     ylabel('y')

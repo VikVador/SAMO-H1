@@ -6,6 +6,9 @@
 %                                                                         %
 % @ Arnaud Rémi                                        @ Victor Mangeleer %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This script has for purpose to test where the optimization method lands
+% during the process (see report, introduction).
 
 clearvars; close all; clc
 %% ----------

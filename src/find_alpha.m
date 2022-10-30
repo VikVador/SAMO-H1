@@ -25,7 +25,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
     % number of calls to the objective function f
     iter       = 0;
     calls_to_f = 0;
-    max_iteration_alpha = 50;
+    max_iteration_alpha   = 50;
     index_iteration_alpha = 0;
 
     switch method
@@ -89,9 +89,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
         dphi = diff(phi);
         calls_to_f = calls_to_f + 1;
 
-        %---
         % Initialization of alpha's
-        %---
         alpha_kminus1 = 0; %phi'(0)<0
         alpha_k = h;
         % loop until phi'(alpha_k) > 0
@@ -100,9 +98,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
             calls_to_f = calls_to_f + 1;
         end
 
-        %---
         % Iterative update
-        %---
         while( alpha_k - alpha_kminus1 > 1e-15)
 
             alpha_kplus1 = (alpha_k + alpha_kminus1)/2;
@@ -128,8 +124,6 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
             iter = iter + 1;
 
         case 'CQ'
-            % Note: (-1)^(opti_method + 1), there is a + if we are in the
-            % SDM and -1 in the case of the CG method.
             alpha = (-1)^(opti_method + 1) * (transpose(d) * s)./(transpose(d) * H * d) ;
             iter = iter + 1;
     end
