@@ -45,7 +45,7 @@
 functionID = 2;
 
 % Defines the line search method
-ls_method = 'S';
+ls_method = 'D';
 
 % Defines the stopping criteria
 SC_index = 2;
@@ -57,13 +57,16 @@ s_plot = false;
 save_plot = false;
 
 % Initial point 
-xinit   = [10,10];
+xinit   = [2,6];
 
 % Maximum number of iterations
-MaxIter = 20;
+MaxIter = 40;
 
 % Maximum number of iterations to compute alpha
-MaxIter_alpha = 100;    
+MaxIter_alpha = 200;
+
+% Step of the alpha_1 initialization in 'D' and 'S' line search methods
+h = 1e-2;
 
 % Tolerances for the stoping criteria 
 Epsilon = 1e-5;         
@@ -134,7 +137,7 @@ switch method
 
             % 3 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, s, s);
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, h, i, H_f, s, s);
             
             % Updating the number of iterations to compute alpha
             alpha_iters = alpha_iters + alpha_it;
@@ -157,7 +160,7 @@ switch method
             
             % 2 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g1, d);
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, h, i, H_f, g1, d);
             alpha_iters            = alpha_iters + alpha_it;
             
             % 3 - Updating x
@@ -191,7 +194,7 @@ switch method
             if i==1
                     g(:,i) = [grad_f(x(1,i),x(2,i))];
                     phi(alpha) = f(x(1,i)-alpha*g(1) , x(2,i)-alpha*g(2));
-                    alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, -g(:,i), -g(:,i));
+                    alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, h, i, H_f, -g(:,i), -g(:,i));
                     x(1,i+1) = x(1,i) - alpha_opt*g(1);
                     x(2,i+1) = x(2,i) - alpha_opt*g(2);
                 continue; 

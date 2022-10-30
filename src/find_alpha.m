@@ -32,6 +32,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
             % First and second derivatives of phi
             dphi = diff(phi);
             d2phi = diff(dphi);      
+            calls_to_f = calls_to_f + 2;
 
             % Initialization of alpha's
             alpha0 = 0;
@@ -39,7 +40,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
             alpha = 1;
             
             % Iterative update (adding maximum number of it in loop condition to reduce computation time)
-            while(abs(alpha - previous_alpha) > 1e-5 && iter < max_it)
+            while(abs(vpa(dphi(alpha))) > 1e-9 && iter < max_it)
                 previous_alpha = alpha0;
                 % prevent from division by zero
                 if(vpa(d2phi(alpha0)) == 0)
@@ -49,9 +50,8 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
                 end
                 alpha = alpha0;
                 iter = iter + 1;
-                calls_to_f = calls_to_f + 2;                               % 2 calls : dphi and d2phi
+                calls_to_f = calls_to_f + 4; %2 in conditions, 2 in operations
             end
-
         case 'D'
         dphi = diff(phi);
         calls_to_f = calls_to_f + 1;
@@ -62,7 +62,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
         alpha_kminus1 = 0; %phi'(0)<0
         alpha_k = h;
         % loop until phi'(alpha_k) > 0
-        while(dphi(alpha_k) < 0)
+        while(vpa(dphi(alpha_k)) < 0)
             alpha_k = alpha_k + h;
             calls_to_f = calls_to_f + 1;
         end
@@ -80,7 +80,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
                 alpha_k = alpha_kplus1;
             end
             iter = iter + 1;
-            calls_to_f = calls_to_f + 1; % in the if condition
+            calls_to_f = calls_to_f + 1; % in if condition
         end
         alpha = alpha_k;
 
@@ -95,7 +95,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
         alpha_kminus1 = 0; %phi'(0)<0
         alpha_k = h;
         % loop until phi'(alpha_k) > 0
-        while(dphi(alpha_k) < 0)
+        while(vpa(dphi(alpha_k)) < 0)
             alpha_k = alpha_k + h;
             calls_to_f = calls_to_f + 1;
         end
@@ -103,7 +103,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
         %---
         % Iterative update
         %---
-        while( abs(vpa(dphi(alpha_k))) > 1e-2)
+        while( abs(vpa(dphi(alpha_k))) > 1e-8)
             alpha_kplus1 = alpha_k - vpa(dphi(alpha_k))/(vpa(dphi(alpha_k) - dphi(alpha_kminus1))) * (alpha_k - alpha_kminus1);
             alpha_kminus1 = alpha_k;
             alpha_k = alpha_kplus1;
