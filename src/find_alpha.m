@@ -8,7 +8,7 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
     %                 'D'   --> Dichotomy
     %                 'BB'  --> Black-box 'solve' function @Mathworks
     %                 'DIV' --> Use divergent serie ~ 1/(k+1) for alpha_k
-    %                 'CQ'  --> Formula for convex quadratic functions
+    %                 'CQ'  --> Exact formula for convex quadratic functions
     %
     % - opti_method = index of optimization method used (needed for "CQ")
     %
@@ -82,34 +82,37 @@ function [alpha, iter, calls_to_f] = find_alpha(phi, method, opti_method, max_it
             end
 
         case 'S'
-            % Derivative of phi
-            dphi = diff(phi);
+            
+        dphi = diff(phi);
+        calls_to_f = calls_to_f + 1;
+        
+        %---
+        % Initialization of alpha's
+        %---
+        alpha_kminus1 = 0; %phi'(0)<0
+        alpha_k = h;
+        % loop until phi'(alpha_k) > 0
+        while(dphi(alpha_k) < 0)
+            alpha_k = alpha_k + h;
+            calls_to_f = calls_to_f + 1;
+        end
+        
+        %---
+        % Iterative update
+        %---
+        while( alpha_k - alpha_kminus1 > 1e-15)
 
-            % Initialization of alpha's
-            alpha_k = h;
-            while(dphi(alpha_k) < 0)
-                alpha_k = alpha_k + h;
-                calls_to_f = calls_to_f + 1;                               % 1 call : dphi 
+            alpha_kplus1 = (alpha_k + alpha_kminus1)/2;
+        
+            if(vpa(dphi(alpha_kplus1)) < 0)
+                alpha_kminus1 = alpha_kplus1;
+            else
+                alpha_k = alpha_kplus1;
             end
-            alpha = alpha_k/2;
-
-            % Iterative update
-            alpha_kminus1 = 0;
-            while(max(abs(alpha - alpha_k) , abs(alpha - alpha_kminus1)) > 1e-5)
-                dphi_alpha_k = dphi(alpha_k); % Save 1 call
-
-                % Division by 0 for f2 using the CG in (10, 10)
-                denominator = vpa(dphi_alpha_k) - vpa(dphi(alpha_kminus1));
-                if denominator == 0
-                    denominator = 0.1;
-                end
-
-                alpha = alpha_k - vpa(dphi_alpha_k) * (alpha_k - alpha_kminus1)/( denominator );
-                alpha_kminus1 = alpha_k;
-                alpha_k = alpha;
-                iter = iter + 1;
-                calls_to_f = calls_to_f + 3;                               % 2 calls : dphi_alpha_k and dphi(alpha_kminus1)
-            end
+            iter = iter + 1;
+            calls_to_f = calls_to_f + 1; % in the if condition
+        end
+        alpha = alpha_k;
 
         case 'BB'
             alpha = solve(diff(phi) == 0);

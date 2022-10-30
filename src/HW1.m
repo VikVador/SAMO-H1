@@ -37,7 +37,7 @@
 %   f(x_(k+1)) - f(x_k) < nu
 %
 
-clearvars; close all; clc
+%clearvars; close all; clc
 %% ----------
 %  Parameters
 %  ----------
@@ -45,7 +45,7 @@ clearvars; close all; clc
 functionID = 1;
 
 % Defines the line search method
-ls_method = 'BB';
+ls_method = 'CQ';
 
 % Defines the stopping criteria
 SC_index = 2;
@@ -57,16 +57,16 @@ s_plot = false;
 save_plot = false;
 
 % Initial point 
-xinit   = [10, 9];
+xinit   = [10,10];
 
 % Maximum number of iterations
-MaxIter = 10;
+MaxIter = 200;
 
 % Maximum number of iterations to compute alpha
-MaxIter_alpha = 50;    
+MaxIter_alpha = 100;    
 
 % Tolerances for the stoping criteria 
-Epsilon = 1e-5;         
+Epsilon = 1e-20;         
 Nu      = 1e-5;       
 
 %% --------------
@@ -126,7 +126,6 @@ switch method
 
             % 1 - Finding steepest descent direction                    
             s = -[grad_f(x(1, i), x(2, i))];
-            vpa(norm(s, 2))
 
             % 2 - Convergence check (/!\ SC evaluated at grad(x_(k + 1)))
             if i ~= 1 && stoppingCriteria(SC_index, s, Epsilon, f, Nu, x(:, i - 1), x(:, i))
@@ -159,18 +158,16 @@ switch method
             
             % 2 - Computing alpha
             phi(alpha)             = f(x(1, i) + alpha * d(1), x(2, i) + alpha * d(2));
-            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g1, d)
-            alpha_iters            = alpha_iters + alpha_it
-
+            [alpha_opt, alpha_it]  = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g1, d);
+            alpha_iters            = alpha_iters + alpha_it;
+            
             % 3 - Updating x
             x(1, i + 1) = x(1, i) + alpha_opt * d(1);
             x(2, i + 1) = x(2, i) + alpha_opt * d(2);   
             
             % 4 - Computing new gradient
             g0 = g1;
-            x(:,i+1)
-            grad_f(x(1,i+1),x(2,i+1))
-            g1 = [grad_f(x(1, i + 1), x(2, i + 1))]
+            g1 = [grad_f(x(1, i + 1), x(2, i + 1))];
 
             % 5 - Convergence check
             if i ~= 1 && stoppingCriteria(SC_index, g1, Epsilon, f, Nu, x(:, i), x(:, i + 1))
@@ -187,7 +184,7 @@ switch method
 
         end
         
-        x = x(:, 1 : i); 
+        x = x(:, 1 : i+1); 
         
     case 3        
         H = eye(2);
@@ -195,7 +192,7 @@ switch method
             if i==1
                     g(:,i) = [grad_f(x(1,i),x(2,i))];
                     phi(alpha) = f(x(1,i)-alpha*g(1) , x(2,i)-alpha*g(2));
-                    alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g(:,i), -g(:,i));
+                    alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, -g(:,i), -g(:,i));
                     x(1,i+1) = x(1,i) - alpha_opt*g(1);
                     x(2,i+1) = x(2,i) - alpha_opt*g(2);
                 continue; 
@@ -204,10 +201,10 @@ switch method
             g(:,i) = [grad_f(x(1,i),x(2,i))];
             gamma_k = g(:,i) - g(:,i-1);
             delta_k = x(:,i) - x(:,i-1);
-            vpa(norm(g(:,i), 2))
+            
             if i ~= 1 && stoppingCriteria(SC_index, g(:,i), Epsilon, f, Nu, x(:, i - 1), x(:, i))
-                parameters(8) = i;
-                break;
+               parameters(8) = i;
+               break;
             end
             
             % Terms in H's update
@@ -219,8 +216,13 @@ switch method
                                     (transpose(delta_k)*gamma_k);
             H = H + A - B;
             d = H*g(:,i);
-            phi(alpha) = f(x(1,i)-alpha*d(1) , x(2,i)-alpha*d(2));
-            alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g(:,i), -g(:,i)); 
+            if(g(:,i) ~= [0;0])
+                phi(alpha) = f(x(1,i)-alpha*d(1) , x(2,i)-alpha*d(2));
+                alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g(:,i), d); 
+            else
+                alpha_opt = 0;
+            end
+            
             x(:,i+1) = x(:,i) - alpha_opt*H*g(:,i);
 
         end
@@ -252,9 +254,10 @@ disp(" ");
 disp(" ");
 
 % Plotting optimization path (2D & 3D) and evolution of f
+
 plotEvolutionObjF(x, f, functionID, parameters, save_plot)
 plotOptimizationPath(x, f, functionID, parameters, save_plot);
-plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
+%plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
 
 
 
