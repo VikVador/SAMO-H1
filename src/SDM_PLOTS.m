@@ -19,18 +19,21 @@ clearvars; close all; clc
 functionID = 2;
 
 % Initial points
-xinit_values = [5 5; -6 -6]; 
+xinit_values = [10 10; -10 -10]; 
 
-% Maximum number of iterations
-MaxIter = 50;    
+% Maximum number of iterations in the main loop
+MaxIter = 10;    
+
+% Maximum number of iterations to compute alpha
+MaxIter_alpha = 50;    
 
 % Defining stopping criteria and alpha used for our comparison
 SC_values    = [1, 2, 3];
 ALPHA_values = ["NR", "S", "D", "BB", "DIV", "CQ"];
 
 % Tolerances for the stoping criteria 
-Epsilon = 1e-10;         
-Nu      = 1e-10; 
+Epsilon = 1e-5;         
+Nu      = 1e-5; 
 
 %  --------
 %  Symbolic
@@ -51,7 +54,7 @@ iter_call   = zeros(6, 3);
 
 % For the plots and terminal
 alpha_name = ["Newton raphson"; "Secant"; "Dichotomy"; "Black Box"; "Divergent serie"; "Convex quadratic function"];
-sc_name    = ["max(grad_f) < eps"; "norm(grad_f, 2) < eps"; "f(x_(k+1)) - f(x_k) < nu"];
+sc_name    = ["max(abs(grad_f)) < eps"; "norm(grad_f, 2) < eps"; "f(x_(k+1)) - f(x_k) < nu"];
 
 % Information over terminal (1)
 disp("Epsilon : " + sprintf('%.10f', Epsilon));
@@ -103,6 +106,12 @@ for s_val = 1 : size(SC_values, 2)
             if ls_method == "DIV" && functionID == 2
                 continue;
             end
+
+            % Security (2) - f2 doest not like secant apparently
+            if ls_method == "S" && functionID == 2
+                continue;
+            end
+
             %--------------------------------------------------------------
             %                           SECURITY
             %--------------------------------------------------------------
@@ -131,7 +140,7 @@ for s_val = 1 : size(SC_values, 2)
     
                 % 3 - Computing alpha
                 phi(alpha) = f(x(1, i) + alpha * s(1), x(2, i) + alpha * s(2));                   
-                [alpha_opt, alpha_it, f_call_it]  = find_alpha(phi, ls_method, 0.1, i, H_f, s);  % 1 call to f each time phi is used
+                [alpha_opt, alpha_it, f_call_it]  = find_alpha(phi, ls_method, 1, MaxIter_alpha, 0.1, i, H_f, s, s);  % 1 call to f each time phi is used
                 
                 % Updating the total number of iterations to compute alpha
                 % as well as the number of calls
@@ -142,6 +151,11 @@ for s_val = 1 : size(SC_values, 2)
                 else
                     f_calls = f_calls + 1;
                 end
+               
+                % We don't know how many calls for the BB
+                if ls_method == "BB"
+                    f_calls = 0;
+                end
 
                 % 4 - Updating x
                 x(1, i + 1) = x(1, i) + alpha_opt * s(1);
@@ -151,9 +165,9 @@ for s_val = 1 : size(SC_values, 2)
                 %                                PLACE METHOD END
                 %  ------------------------------------------------------------------------
             end
+
+            x = x(:, 1 : i); 
                 
-            x = x(:, 1 : i);
-            
             %  ------------------------------------------------------------
             %                   Others (don't need to look)
             %  ------------------------------------------------------------
@@ -204,27 +218,26 @@ for s_val = 1 : size(SC_values, 2)
     % -------------------------------------------------------------
     %       Plotting (1) - Making graph look pretty
     % -------------------------------------------------------------
-    xlabel('Number of iterations [-]', 'FontSize', 20);
-    ylabel("f_" + int2str(functionID) + "(x, y)", 'Fontsize', 20);
+    xlabel('Number of iterations [-]', 'FontSize', 18);
+    ylabel("f_" + int2str(functionID) + "(x, y)", 'Fontsize', 18);
     if functionID == 1
-        h = legend('Newton raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie', 'Convex quadratic function');
+        h = legend('Newton-Raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie', 'Convex quadratic function');
     else
-        h = legend('Newton raphson','Secant', 'Dichotomy', 'Black Box');
+        h = legend('Newton-Raphson', 'Dichotomy', 'Black Box');
     end
-    set(h,'FontSize', 20);
-    set(gca,'fontsize', 20);
-    set(gcf,'position',[50, 50, 750, 600]);
+    set(h,'FontSize', 18);
+    set(gca,'fontsize', 18);
+    xlim([1, MaxIter]);
     grid on;
     saveas(plt, "../graphs/report/SDM/" + int2str(functionID) + "/f" + int2str(functionID) + "_" + ...
                 sc_name(s_val) + "_(" + int2str(xinit_values(1,1)) + "," + int2str(xinit_values(1,2)) + ")_" + ...
-                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".png");
+                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".pdf");
 
     % -------------------------------------------------------------
     %     Plotting (2) - Bar plot of iterations and calls to f
     % -------------------------------------------------------------
     plt = figure();
     b = bar(iter_call);
-    ylabel('Number of iterations/calls to f [-]', 'FontSize', 20);
     ylim([0, max(max(iter_call)) * 1.1]) 
     % Note : Increase by 10 % the vertical height for no 
     % overlap between text and the top of the plot figure
@@ -234,33 +247,34 @@ for s_val = 1 : size(SC_values, 2)
     ytips1 = b(1).YEndPoints;
     labels1 = string(b(1).YData);
     text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
-        'VerticalAlignment','bottom', 'FontSize', 18)
+        'VerticalAlignment','bottom', 'FontSize', 15)
 
     % This is for bar 2
     xtips2 = b(2).XEndPoints;
     ytips2 = b(2).YEndPoints;
     labels2 = string(b(2).YData);
     text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
-        'VerticalAlignment','bottom', 'FontSize', 18)
+        'VerticalAlignment','bottom', 'FontSize', 15)
    
     % This is for bar 3
     xtips3 = b(3).XEndPoints;
     ytips3 = b(3).YEndPoints;
     labels3 = string(b(3).YData);
     text(xtips3,ytips3,labels3,'HorizontalAlignment','center',...
-        'VerticalAlignment','bottom', 'FontSize', 18)
+        'VerticalAlignment','bottom', 'FontSize', 15)
 
     % Making the plot good looking
-    set(h,'FontSize', 20);
-    set(gca,'fontsize', 20);
+    set(h,'FontSize', 18);
+    set(gca,'fontsize', 18);
 
     % Adding method name as labels
-    set(gca, 'XTickLabel',{'NR','S','D','BB','DIV','CQ'})
-    set(gcf,'position',[50, 50, 750, 600]);
+    set(gca, 'XTickLabel',{'Newton-Raphson','Secant', 'Dichotomy', 'Black Box', 'Divergent serie', 'Conv. quad. fun.'}, 'FontSize', 12)
+    xtickangle(20);
+    ylabel('Number of iterations/calls to f [-]', 'FontSize', 20);
     grid on;
     saveas(plt, "../graphs/report/SDM/" + int2str(functionID) + "/bar_f" + int2str(functionID) + "_" + ...
                 sc_name(s_val) + "_(" + int2str(xinit_values(1,1)) + "," + int2str(xinit_values(1,2)) + ")_" + ...
-                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".png");
+                "_(" + int2str(xinit_values(2,1)) + "," + int2str(xinit_values(2,2)) + ")_" + ".pdf");
 end
 
 
