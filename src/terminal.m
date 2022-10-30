@@ -31,7 +31,7 @@ function method = terminal(index, parameters, ls_method)
             
         % Parameters of the simulation
         case 2
-            %clc;
+            clc;
             functionsName = ["Steepest descent method";
                              "Conjugate gradients method with Fletcher-Reeves update rule";
                              "BFGS Quasi-Newton method"];
@@ -90,7 +90,7 @@ function method = terminal(index, parameters, ls_method)
 
         % Plotting the results & optimizing (2)
         case 4
-            %clc;
+            clc;
             terminal(2, parameters, ls_method);
             disp("-------------------");
             disp("      Plotting     ");
@@ -98,7 +98,7 @@ function method = terminal(index, parameters, ls_method)
             disp(" ");
             disp("Plotting objective functions : done");
             disp(" ");
-            close all;
+            %close all;
             disp("-------------------");
             disp("    Optimizing     ");
             disp("-------------------");
@@ -107,7 +107,7 @@ function method = terminal(index, parameters, ls_method)
         
         % Showing the results
         case 5
-            %clc;
+            clc;
             terminal(2, parameters, ls_method);
             disp("-------------------");
             disp("      Plotting     ");
@@ -115,7 +115,7 @@ function method = terminal(index, parameters, ls_method)
             disp(" ");
             disp("Plotting objective functions : done");
             disp(" ");
-            close all;
+            %close all;
             disp("-------------------");
             disp("    Optimizing     ");
             disp("-------------------");

@@ -42,7 +42,7 @@
 %  Parameters
 %  ----------
 % Defines the objective function
-functionID = 1;
+functionID = 2 ;
 
 % Defines the line search method
 ls_method = 'CQ';
@@ -57,7 +57,7 @@ s_plot = false;
 save_plot = false;
 
 % Initial point 
-xinit   = [10,10];
+xinit   = [10, 10];
 
 % Maximum number of iterations
 MaxIter = 200;
@@ -255,7 +255,7 @@ disp(" ");
 
 % Plotting optimization path (2D & 3D) and evolution of f
 
-plotEvolutionObjF(x, f, functionID, parameters, save_plot)
+%plotEvolutionObjF(x, f, functionID, parameters, save_plot)
 plotOptimizationPath(x, f, functionID, parameters, save_plot);
 %plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
 

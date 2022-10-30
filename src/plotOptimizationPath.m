@@ -10,7 +10,7 @@ function [] = plotOptimizationPath(x, fun, functionID, parameters, save_plot)
     lb = -10;
     up = 10;
 
-    xi = lb : 0.25 : up;
+    xi = lb : 0.1 : up;
     f = zeros(length(xi), length(xi));
 
     % Computing objective function's v
@@ -19,7 +19,7 @@ function [] = plotOptimizationPath(x, fun, functionID, parameters, save_plot)
     end
 
     % Initialization of figure
-    figure('name','Optimization path')
+    %figure('name','Optimization path')
     hold on
     xlabel('x')
     ylabel('y')
