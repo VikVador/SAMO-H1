@@ -42,10 +42,10 @@
 %  Parameters
 %  ----------
 % Defines the objective function
-functionID = 1;
+functionID = 2;
 
 % Defines the line search method
-ls_method = 'CQ';
+ls_method = 'S';
 
 % Defines the stopping criteria
 SC_index = 2;
@@ -60,13 +60,13 @@ save_plot = false;
 xinit   = [10,10];
 
 % Maximum number of iterations
-MaxIter = 200;
+MaxIter = 20;
 
 % Maximum number of iterations to compute alpha
 MaxIter_alpha = 100;    
 
 % Tolerances for the stoping criteria 
-Epsilon = 1e-20;         
+Epsilon = 1e-5;         
 Nu      = 1e-5;       
 
 %% --------------
@@ -123,7 +123,6 @@ alpha_iters = 0;
 switch method
     case 1        
         for i = 1 : MaxIter
-
             % 1 - Finding steepest descent direction                    
             s = -[grad_f(x(1, i), x(2, i))];
 
@@ -216,12 +215,8 @@ switch method
                                     (transpose(delta_k)*gamma_k);
             H = H + A - B;
             d = H*g(:,i);
-            if(g(:,i) ~= [0;0])
-                phi(alpha) = f(x(1,i)-alpha*d(1) , x(2,i)-alpha*d(2));
-                alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g(:,i), d); 
-            else
-                alpha_opt = 0;
-            end
+            phi(alpha) = f(x(1,i)-alpha*d(1) , x(2,i)-alpha*d(2));
+            alpha_opt = find_alpha(phi, ls_method, method, MaxIter_alpha, 0.1, i, H_f, g(:,i), d); 
             
             x(:,i+1) = x(:,i) - alpha_opt*H*g(:,i);
 
@@ -255,7 +250,7 @@ disp(" ");
 
 % Plotting optimization path (2D & 3D) and evolution of f
 
-plotEvolutionObjF(x, f, functionID, parameters, save_plot)
+%plotEvolutionObjF(x, f, functionID, parameters, save_plot)
 plotOptimizationPath(x, f, functionID, parameters, save_plot);
 %plotOptimizationPath3D(x, f, functionID, parameters, save_plot);
 
